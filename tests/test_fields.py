@@ -5,6 +5,9 @@ import datetime
 import django
 import pytest
 import uuid
+import tempfile
+import shutil
+from py.path import local
 
 
 # Tests for field keyword arguments and core functionality.
@@ -476,6 +479,22 @@ class TestEmailField(FieldValues):
     }
     outputs = {}
     field = serializers.EmailField()
+
+
+class TestFilePathField(FieldValues):
+    """
+    Valid and invalid values for `RegexField`.
+    """
+    valid_inputs = {
+        'foo.txt': 'foo.txt',
+    }
+    invalid_inputs = {
+        'foo.png': ["This value does not match the required pattern."],
+        'bar.txt': ["This value does not match the required pattern."]
+    }
+    outputs = {}
+    temp_path = tempfile.mkdtemp()
+    field = serializers.FilePathField(path=temp_path, match='foo.*\.txt$')
 
 
 class TestRegexField(FieldValues):

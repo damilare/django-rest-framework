@@ -141,6 +141,14 @@ Corresponds to `django.db.models.fields.CharField` or `django.db.models.fields.T
 
 The `allow_null` option is also available for string fields, although its usage is discouraged in favor of `allow_blank`. It is valid to set both `allow_blank=True` and `allow_null=True`, but doing so means that there will be two differing types of empty value permissible for string representations, which can lead to data inconsistencies and subtle application bugs.
 
+## FilePathField
+
+A text representation, validates files matches the pattern
+
+Corresponds to `django.form.fields.FilePathField`
+
+**Signature:** `FilePathField(path=None[, match=None, recursive=False, max_length=100, **options])`
+
 ## EmailField
 
 A text representation, validates the text to be a valid e-mail address.

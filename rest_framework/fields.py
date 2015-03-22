@@ -1,4 +1,5 @@
 from __future__ import unicode_literals
+import os
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -1360,3 +1361,40 @@ class ModelField(Field):
         if is_protected_type(value):
             return value
         return self.model_field.value_to_string(obj)
+
+
+class FilePathField(CharField):
+    def __init__(self, path, match=None, recursive=False, allow_files=True,
+                 allow_folders=False, required=True, *args, **kwargs):
+        self.path, self.match, self.recursive = path, match, recursive
+        self.allow_files, self.allow_folders = allow_files, allow_folders
+        self.choices = []
+
+        super(FilePathField, self).__init__(*args, **kwargs)
+
+        if self.match is not None:
+            self.match_re = re.compile(self.match)
+
+        if recursive:
+            for root, dirs, files in sorted(os.walk(self.path)):
+                if self.allow_files:
+                    for f in files:
+                        if self.match is None or self.match_re.search(f):
+                            f = os.path.join(root, f)
+                            self.choices.append((f, f.replace(path, "", 1)))
+                if self.allow_folders:
+                    for f in dirs:
+                        if f == '__pycache__':
+                            continue
+                        if self.match is None or self.match_re.search(f):
+                            f = os.path.join(root, f)
+                            self.choices.append((f, f.replace(path, "", 1)))
+        else:
+            for f in sorted(os.listdir(self.path)):
+                if f == '__pycache__':
+                    continue
+                full_file = os.path.join(self.path, f)
+                if (((self.allow_files and os.path.isfile(full_file)) or
+                        (self.allow_folders and os.path.isdir(full_file))) and
+                        (self.match is None or self.match_re.search(f))):
+                    self.choices.append((full_file, f))
